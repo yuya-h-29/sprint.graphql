@@ -25,6 +25,7 @@ const schema = buildSchema(`
     name: String
     type: String
     damage: Int
+    Pokemon:[Pokemon]
   }
 
   type Query {
@@ -32,6 +33,7 @@ const schema = buildSchema(`
     Pokemon(name: String, id: Int): Pokemon
     Attacks(type: String!):[Attack]
     type(name: String!): [Pokemon]
+    attack(name: String!): Attack
   }
 `);
 // The root provides the resolver functions for each type of query or mutation.
@@ -56,8 +58,51 @@ const root = {
     return data.pokemon.filter((obj) => {
       return obj.types.includes(request.name);
     }); //types[request.name]);
-
     //return => [data.pokemon[0],[1],...]
+  },
+
+  attack: (request) => {
+    // return {
+    //   name: "Tackle",
+    //   type: "Normal",
+    //   damage: 12,
+    // };
+    let fastOrSpecial;
+    // console.log("AAAA", fastOrSpecial);
+    let attackType;
+    let attackDamage;
+    for (const obj of data.attacks.fast) {
+      if (obj.name === request.name) {
+        fastOrSpecial = "fast";
+        attackType = obj.type;
+        attackDamage = obj.damage;
+        break;
+      }
+      for (const obj of data.attacks.special) {
+        if (obj.name === request.name) {
+          fastOrSpecial = "special";
+          attackType = obj.type;
+          attackDamage = obj.damage;
+          break;
+        }
+      }
+    }
+    // console.log("BBBB", fastOrSpecial);
+    const result = [];
+    for (let index = 0; index < data.pokemon.length; index++) {
+      for (const attack of data.pokemon[index].attacks[fastOrSpecial]) {
+        if (attack.name === request.name) {
+          result.push(data.pokemon[index]);
+        }
+      }
+    }
+    let finalResult = {
+      name: request.name,
+      type: attackType,
+      damage: attackDamage,
+      Pokemon: result,
+    };
+    return finalResult;
   },
 };
 
