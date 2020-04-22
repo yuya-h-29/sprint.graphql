@@ -5,12 +5,15 @@ const { buildSchema } = require("graphql");
 const data = require("./data");
 
 // The schema should model the full data object available.
+// Update your schema so it fully represents your Pokemon data object!
+// Add to your Schema so you can also access Types and Attacks!
 const schema = buildSchema(`
+
   type Pokemon {
     id: String
     name: String!
-
     attacks: Attacks
+    types: [String]
   }
 
   type Attacks {
@@ -26,22 +29,24 @@ const schema = buildSchema(`
 
   type Query {
     Pokemons: [Pokemon]
-    Pokemon(name: String!): Pokemon
+    Pokemon(name: String, id: Int): Pokemon
   }
 `);
-// Attacks: [Attacks]
-// Attacks(name: String!): Attack
 // The root provides the resolver functions for each type of query or mutation.
 const root = {
   Pokemons: () => {
     return data.pokemon;
   },
   Pokemon: (request) => {
-    return data.pokemon.find((pokemon) => pokemon.name === request.name);
+    if (typeof request.id === "number") {
+      return data.pokemon[request.id - 1];
+      // return data.pokemon.find((pokemon) => {
+      //   Number(pokemon.id) === request.id;
+      // });
+    } else {
+      return data.pokemon.find((pokemon) => pokemon.name === request.name);
+    }
   },
-  // Attacks: () => {
-  //   return data.attacks.attacks.fast;
-  // },
 };
 
 // Start your express server!
