@@ -9,13 +9,28 @@ const schema = buildSchema(`
   type Pokemon {
     id: String
     name: String!
+
+    attacks: Attacks
   }
+
+  type Attacks {
+    fast: [Attack]
+    special: [Attack]
+  }
+
+  type Attack {
+    name: String
+    type: String
+    damage: Int
+  }
+
   type Query {
     Pokemons: [Pokemon]
     Pokemon(name: String!): Pokemon
   }
 `);
-
+// Attacks: [Attacks]
+// Attacks(name: String!): Attack
 // The root provides the resolver functions for each type of query or mutation.
 const root = {
   Pokemons: () => {
@@ -24,6 +39,9 @@ const root = {
   Pokemon: (request) => {
     return data.pokemon.find((pokemon) => pokemon.name === request.name);
   },
+  // Attacks: () => {
+  //   return data.attacks.attacks.fast;
+  // },
 };
 
 // Start your express server!
