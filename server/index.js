@@ -16,6 +16,14 @@ const schema = buildSchema(`
     types: [String]
   }
 
+  input newType{
+    content:String
+  }
+
+  type Mutation{
+    imputNewType(input:String): [String]
+  }
+
   type Attacks {
     fast: [Attack]
     special: [Attack]
@@ -35,7 +43,11 @@ const schema = buildSchema(`
     type(name: String!): [Pokemon]
     attack(name: String!): Attack
   }
+  
+
 `);
+
+// Create mutations to modify Pokemon, Types and Attacks; including adding, editing and removing them
 // The root provides the resolver functions for each type of query or mutation.
 const root = {
   Pokemons: () => {
@@ -43,7 +55,6 @@ const root = {
   },
   Pokemon: (request) => {
     if (typeof request.id === "number") {
-      // console.log("aaaaaaa", request);
       return data.pokemon[request.id - 1];
     } else {
       return data.pokemon.find((pokemon) => pokemon.name === request.name);
@@ -51,24 +62,16 @@ const root = {
   },
   Attacks: (request) => {
     return data.attacks[request.type];
-    // request.type => fast / special
   },
 
   type: (request) => {
     return data.pokemon.filter((obj) => {
       return obj.types.includes(request.name);
-    }); //types[request.name]);
-    //return => [data.pokemon[0],[1],...]
+    });
   },
 
   attack: (request) => {
-    // return {
-    //   name: "Tackle",
-    //   type: "Normal",
-    //   damage: 12,
-    // };
     let fastOrSpecial;
-    // console.log("AAAA", fastOrSpecial);
     let attackType;
     let attackDamage;
     for (const obj of data.attacks.fast) {
@@ -87,7 +90,6 @@ const root = {
         }
       }
     }
-    // console.log("BBBB", fastOrSpecial);
     const result = [];
     for (let index = 0; index < data.pokemon.length; index++) {
       for (const attack of data.pokemon[index].attacks[fastOrSpecial]) {
@@ -103,6 +105,11 @@ const root = {
       Pokemon: result,
     };
     return finalResult;
+  },
+
+  imputNewType: (request) => {
+    data.types.push(request.input);
+    return data.types;
   },
 };
 
